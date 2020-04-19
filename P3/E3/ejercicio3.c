@@ -71,20 +71,11 @@ int* calculate_intervals(int longitud, int t_number){
     return intervals;
 }
 
-/**
- * vec1 - ingresos
- * vec2 - gastos
- * return: ingresos - gastos
- */
 double seqCheck(const double* vec1, const double* vec2, int tam){
-    //ingresos - gastos
-	double res1 = 0.0;
-    double res2 = 0.0;
+	double res = 0.0;
 	for(int i = 0; i<tam; i++){
-        res1 += vec1[i];
-        res2 += vec2[i];
+        res += (vec1[i]*vec2[i]);
     }
-    double res = res1 - res2;
 	return res;
 }
 
@@ -104,8 +95,8 @@ int main(int argc, char **argv) {
             if (rank == MASTER) {
                 int n_proc = world_size - 1;
                 int *intervals = calculate_intervals(longitud, n_proc);
-                double *ingresos = crearVectorAleatorio(longitud);
-                double *gastos = crearVectorAleatorio(longitud);
+                double *vec1 = crearVectorAleatorio(longitud);
+                double *vec2 = crearVectorAleatorio(longitud);
             
                 int length;//longitud de subarray a enviar
                 int ini;//posicion inicial del subarray en el array original
@@ -118,8 +109,8 @@ int main(int argc, char **argv) {
                     dest = i+1;
                     tag = i+1;
                     //printf("SEND->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, dest, tag, longitud);
-                    MPI_Send(&(ingresos[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
-                    MPI_Send(&(gastos[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+                    MPI_Send(&(vec1[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+                    MPI_Send(&(vec2[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
 
                 //receive tasks from processor
@@ -135,10 +126,10 @@ int main(int argc, char **argv) {
                 }
                 printf("\n--------------------------------------\n");
                 printf("resultado paralelo: %f\n", resultado_final);
-                printf("resultado secuencial: %f\n", seqCheck(ingresos, gastos, longitud));
+                printf("resultado secuencial: %f\n", seqCheck(vec1, vec2, longitud));
                 printf("--------------------------------------\n");
-                free(ingresos);
-                free(gastos);
+                free(vec1);
+                free(vec2);
                 free(intervals);
             }else{
                 int from = MASTER;
