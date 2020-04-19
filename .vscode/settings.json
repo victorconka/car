@@ -4,6 +4,8 @@
         "string_view": "c",
         "initializer_list": "c",
         "utility": "c",
-        "vector": "c"
+        "vector": "c",
+        "type_traits": "c",
+        "sstream": "c"
     }
 }
