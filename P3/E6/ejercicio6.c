@@ -194,7 +194,7 @@ int main(int argc, char **argv)
                     {
                         res += vec[i];
                     }
-                    res *= res;
+                    res = sqrt(res);
                     MPI_Send(&res, 1, MPI_DOUBLE, MASTER, rank, MPI_COMM_WORLD);
                 }
                 else if (rank == TRES)

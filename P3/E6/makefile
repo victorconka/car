@@ -3,7 +3,7 @@ DEBUG   =  -g
 FLAGS  = -Wall -march=x86-64
 CC     = mpicc
 INC    = -I.
-LIB    = -L. -L/usr/lib64 -pthread -lm
+LIB    = -L. -L/usr/lib64 -lm
 SRC      = $(wildcard *.c)
 OBJ      = $(SRC:.c=.c)
 EXEC     = $(SRC:.c=)
