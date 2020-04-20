@@ -11,7 +11,7 @@
 #define TRES 3
 #define CUATRO 4
 
-double seed = 12353.0;
+double seed = 12345.0;
 double myrand()
 {
     double a = 16807.0,
