@@ -42,6 +42,11 @@ int read_option()
     while (loop == 1)
     {
         puts("Tell me something nice: [0, 1, 2, 3, 4]");
+        puts("0: SALIR");
+        puts("1: TEXTO A MAYUSCULAS");
+        puts("2: NUMEROS REALES AL CUADRADO");
+        puts("3: CUADRADO DE SUMA DE VALORES ASCII");
+        puts("4: EJECUTAR 1..3 SIMULTANEAMENTE");
         if (scanf("%d", &number) != 1)
         {
             term = getchar();
