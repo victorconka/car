@@ -125,12 +125,6 @@ int* calculate_intervals(int longitud, int t_number){
     return intervals;
 }
 
-/**
- * Version por filas y por columnas son identicas, la diferencia se encuentra en la manera
- * de interpretar la matriz. Fijarse en 2 grupos de funciones de lectura y escritura de posiciones
- * por filas y por columnas.
- * Como ejemplo, esta la impresion de la matriz por filas y por columnas al final de estos ejercicios
-*/
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);

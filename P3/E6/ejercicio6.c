@@ -166,11 +166,13 @@ int main(int argc, char **argv)
         {
             int option = -1;
             MPI_Recv(&option, 1, MPI_INT, MASTER, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            
             if (option == 0)
             {
                 MPI_Finalize();
                 return 0;
             }
+            
             if (rank == option || option == 4)
             {
                 if (rank == UNO)
@@ -208,9 +210,6 @@ int main(int argc, char **argv)
                             res += (int)buf[i];
                     }
                     MPI_Send(&res, 1, MPI_INT, MASTER, rank, MPI_COMM_WORLD);
-                }
-                else
-                { //cuatro
                 }
             }
         }

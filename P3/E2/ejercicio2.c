@@ -98,6 +98,7 @@ int main(int argc, char **argv) {
             int n_proc = world_size-2;
             int proc[n_proc];//contiene ranks de los procesadores
             int it = 0;
+            //crear vector con procesadores disponibles
             for(int i = 0; i < world_size; i++){
                 if(i != 0 && i != 2){
                     proc[it] = i;
