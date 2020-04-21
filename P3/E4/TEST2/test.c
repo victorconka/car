@@ -4,13 +4,6 @@
 
 #define MASTER 0
 
-//matriz
-int sizeM = 0, //fila
-    sizeN = 0, //columna
-               //submatriz
-    subM = 0,
-    subN = 0;
-
 double seqCheck(const double *matrix, int longitud)
 {
     double res = 0;
@@ -34,29 +27,23 @@ double myrand()
     return res;
 }
 
-double submatrixGetRow(int posM, int posN, const double *matrix)
-{
-    double value = *(matrix + posM * subN + posN);
-    return value;
-}
-
-void matrixSetRow(int posM, int posN, double *matrix, double value)
+void matrixSetRow(int posM, int posN, int sizeN, double *matrix, double value)
 {
     *(matrix + posM * sizeN + posN) = value;
 }
 
-void matrixSetCol(int posM, int posN, double *matrix, double value)
+void matrixSetCol(int posM, int posN, int sizeM, double *matrix, double value)
 {
     *(matrix + posN * sizeM + posM) = value;
 }
 
-double matrixGetRow(int posM, int posN, const double *matrix)
+double matrixGetRow(int posM, int posN, int sizeN, const double *matrix)
 {
     double value = *(matrix + posM * sizeN + posN);
     return value;
 }
 
-double matrixGetCol(int posM, int posN, const double *matrix)
+double matrixGetCol(int posM, int posN, int sizeM, const double *matrix)
 {
     double value = *(matrix + posN * sizeM + posM);
     return value;
@@ -85,7 +72,7 @@ void printMatrixCol(double *mat)
         printf("\n");
     }
 }
-void printMatrixRow(double *mat)
+void printMatrixRow(double *mat, int sizeM, int sizeN)
 {
     for (int i = 0; i < sizeM; i++)
     {
@@ -135,18 +122,27 @@ void calculateChunks(int val, int maxVal, int **vec)
 int main()
 {
     printf("Hello World\n");
+    //-------------------------------------------------
+    //dimensiones de matriz y submatriz
+    int sizeM = 0, //fila
+        sizeN = 0, //columna
+                   //submatriz
+        subM = 0,
+        subN = 0;
+    //-------------------------------------------------
+
     sizeM = 13;
     sizeN = 14;
     subM = 3;
     subN = 4;
-    int subSize = subM*subN;
+    int subSize = subM * subN;
     double *matriz = crearMatriz(sizeM, sizeN); //matriz aleatoria no es mas que un vector
     //--------------------------------------------------------------------------------------
     double *subMatrix = (double *)malloc(sizeof(double) * subSize); //espacio para submatriz
     int nRowChunks = ceilInt(sizeM, subM) + 1;                      //tamaño del vector que contiene posiciones de filas de submatriz dentro de matriz
     int nColChunks = ceilInt(sizeN, subN) + 1;                      //tamaño del vector que contiene posiciones de columnas de submatriz dentro de matriz
-    int *matRowChunks = (int*)calloc(sizeof(int), nRowChunks);       //vector que contiene posiciones de filas de submatriz dentro de matriz
-    int *matColChunks = (int*)calloc(sizeof(int), nColChunks);       //vector que contiene posiciones de filas de submatriz dentro de matriz
+    int *matRowChunks = (int *)calloc(sizeof(int), nRowChunks);     //vector que contiene posiciones de filas de submatriz dentro de matriz
+    int *matColChunks = (int *)calloc(sizeof(int), nColChunks);     //vector que contiene posiciones de filas de submatriz dentro de matriz
     calculateChunks(subM, sizeM, &matRowChunks);                    //calcular vector filas
     calculateChunks(subN, sizeN, &matColChunks);                    //calcular vector columnas
     //--------------------------------------------------------------------------------------
@@ -157,20 +153,24 @@ int main()
     for (int i = 0; i < nRowChunks; i++) //
     {
         iniM = matRowChunks[i];
-        if(i+1 < nRowChunks){
-            finM = matRowChunks[i+1];
+        if (i + 1 < nRowChunks)
+        {
+            finM = matRowChunks[i + 1];
             for (int j = 0; j < nColChunks; j++)
             {
                 iniN = matColChunks[j];
-                if(j+1 < nColChunks){
-                    finN = matColChunks[j+1];
+                if (j + 1 < nColChunks)
+                {
+                    finN = matColChunks[j + 1];
                     //printf("(%d,%d),(%d,%d) ", iniM, finM, iniN, finN);
                     //zona para recorrer y crear submatriz para enviar
                     //------------------------------------------------------
-                    
+
                     itSubmatrix = 0;
-                    for(int row = iniM; row < finM; row++){
-                        for(int col = iniN; col < finN; col++){
+                    for (int row = iniM; row < finM; row++)
+                    {
+                        for (int col = iniN; col < finN; col++)
+                        {
                             double val = matrixGetRow(row, col, matriz);
                             printf("%.2f ", val);
                             subMatrix[itSubmatrix] = val;
@@ -179,25 +179,28 @@ int main()
                         printf("\n");
                     }
                     printf("\n");
-                    
-                    for(int k = 0; k < (finM-iniM); k++){
-                        for(int l = 0; l < (finN-iniN); l++){
+
+                    for (int k = 0; k < (finM - iniM); k++)
+                    {
+                        for (int l = 0; l < (finN - iniN); l++)
+                        {
                             double val = submatrixGetRow(k, l, subMatrix);
                             printf("%.2f ", val);
                         }
                         printf("\n");
                     }
-                    
+
                     printf("//------------------------------------------------------\n");
                     //------------------------------------------------------
                 }
-                
             }
         }
         printf("\n");
     }
-    for(int k = 0; k < subM; k++){
-        for(int l = 0; l < subN; l++){
+    for (int k = 0; k < subM; k++)
+    {
+        for (int l = 0; l < subN; l++)
+        {
             printf("%f ", matrixGetRow(k, l, subMatrix));
         }
         printf("\n");
