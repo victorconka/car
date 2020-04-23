@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
                     MPI_Send(&(matriz[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
                 //receive tasks from processor
-                double resultado_final = seqCheck(matriz, intervals[1]);
+                double resultado_final = seqCheck(matriz, intervals[1]);//columnas correspondientes al procesador 0.
                 double res = 0.0;
                 int source;//procesador origen
                 for(int i = 1; i < world_size; i++){
