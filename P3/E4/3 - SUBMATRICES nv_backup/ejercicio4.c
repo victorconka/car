@@ -179,8 +179,8 @@ int main(int argc, char *argv[])
     }
     else
     {
-        double globalResult = 0.0; //resultado global
-        //const int n_proc = world_size - 1; //restamos procesador 0 de procesadores disponibles
+        double globalResult = 0.0;         //resultado global
+        const int n_proc = world_size - 1; //restamos procesador 0 de procesadores disponibles
         sizeM = atoi(argv[1]);
         sizeN = atoi(argv[2]);
         subM = atoi(argv[3]);
@@ -227,9 +227,6 @@ int main(int argc, char *argv[])
                                 //------------------------------------------------------
                                 //zona para recorrer y crear submatriz para enviar
                                 itSubmatrix = 0; //iterador de posiciones submatriz
-                                dest = countSubMatrix % world_size; //procesador 0 no se utiliza
-                                tag = dest;
-                                
                                 for (int row = iniM; row < finM; row++)
                                 {
                                     for (int col = iniN; col < finN; col++)
@@ -244,25 +241,20 @@ int main(int argc, char *argv[])
                                 subMatHeader[2] = countSubMatrix; //contador de submatriz
                                 //matriz creada
                                 //------------------------------------------------------
-                                
-                                
-                                if (dest == MASTER)
-                                {
-                                    //procesador 0 hace calculos tambien. lo ideal sería almacenar resultado en una pila, y que 
-                                    //procesador 0 envie señal de comienzo de procesamiento. A partir de entonces todos empiecen
-                                    // a calcular el resultado
-                                    globalResult += (seqCheck(subMatrix, subMatHeader[1]*subMatHeader[0]));
-                                }
-                                else
-                                {
-                                    //matriz se puede enviar
-                                    //1. se envian dimensiones de la matriz
-                                    MPI_Send(subMatHeader, header_size, MPI_INT, dest, tag, MPI_COMM_WORLD);
-                                    //------------------------------------------------------
-                                    //2. se envia la submatriz para procesarla
-                                    subMatLength = subMatHeader[0] * subMatHeader[1];
-                                    MPI_Send(subMatrix, subMatLength, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
-                                }
+                                //matriz se puede enviar
+                                //1. se envian dimensiones de la matriz
+                                dest = (countSubMatrix % n_proc) + 1; //procesador 0 no se utiliza
+                                tag = dest;
+                                MPI_Send(subMatHeader, header_size, MPI_INT, dest, tag, MPI_COMM_WORLD);
+                                //------------------------------------------------------
+                                //2. se envia la submatriz para procesarla
+                                subMatLength = subMatHeader[0] * subMatHeader[1];
+                                MPI_Send(subMatrix, subMatLength, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
+                                //------------------------------------------------------
+                                //3. Recibir respuesta
+                                //LA RESPUESTA SE HA DE RECIBIR FUERA, PARA QUE NO SEA SECUENCIAL
+                                //MPI_Recv(&tmpResult, 1, MPI_DOUBLE, dest, dest, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                                //globalResult += tmpResult;
                                 //------------------------------------------------------
                                 //4. aumentar contador de matrices
                                 countSubMatrix++;
@@ -271,7 +263,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-                printf("soy %d, res: %f\n", rank, globalResult);
+
                 //-------------------------------------------------------------------------------------------
                 //desactivar los procesos
                 subMatHeader[0] = -1; //numero de filas de la submatriz
@@ -286,7 +278,7 @@ int main(int argc, char *argv[])
                 for (int i = 1; i < world_size; i++)
                 {
                     MPI_Recv(&tmpResult, 1, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    globalResult += tmpResult;
+                    globalResult+=tmpResult;
                 }
 
                 //-------------------------------------------------------------------------------------------
@@ -315,11 +307,12 @@ int main(int argc, char *argv[])
                     subMatCount = buf_header[2];
                     if (subMatCount != -1)
                     {
-                        dst = subMatCount % world_size;
+                        dst = (subMatCount % n_proc) + 1;
                         matLength = buf_header[0] * buf_header[1];
                         MPI_Recv(buf, matLength, MPI_DOUBLE, MASTER, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                         sumResult += seqCheck(buf, matLength);
                     }
+                    
                 }
                 printf("soy %d, res: %f\n", rank, sumResult);
                 MPI_Send(&sumResult, 1, MPI_DOUBLE, MASTER, rank, MPI_COMM_WORLD);

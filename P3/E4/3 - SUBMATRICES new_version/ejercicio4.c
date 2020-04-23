@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-                printf("soy %d, res: %f\n", rank, globalResult);
+
                 //-------------------------------------------------------------------------------------------
                 //desactivar los procesos
                 subMatHeader[0] = -1; //numero de filas de la submatriz
