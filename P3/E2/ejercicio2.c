@@ -95,35 +95,25 @@ int main(int argc, char **argv) {
         }else{
 
             double *vec = crearVectorAleatorio(longitud);
-            int n_proc = world_size-2;
-            int proc[n_proc];//contiene ranks de los procesadores
             int it = 0;
-            //crear vector con procesadores disponibles
-            for(int i = 0; i < world_size; i++){
-                if(i != 0 && i != 2){
-                    proc[it] = i;
-                    it+=1;
-                }
-            }
-
             if (rank == MASTER) {
-                
-                int *intervals = calculate_intervals(longitud, n_proc);
-                
-
+                int *intervals = calculate_intervals(longitud, world_size);
                 int length;//longitud de subarray a enviar
                 int ini;//posicion inicial del subarray en el array original
                 int dest;//procesador destino
                 int tag;//tag para tarea a enviar
                 //send tasks to processors
-                for(int i = 0; i < n_proc; i++){
+                for(int i = 1; i < world_size; i++){//repartir trabajo menos a uno mismo
                     ini = intervals[i*2];
                     length = intervals[(i*2)+1] - ini;
-                    dest = proc[i];
-                    tag = proc[i];
-                    //printf("SEND->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, dest, tag, longitud);
+                    dest = i;
+                    tag = 111;
                     MPI_Send(&(vec[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
+                printf("rank: %d finished\n", rank);
+                double res = seqCheck(vec, intervals[1]-intervals[0]);
+                MPI_Send(&res, 1, MPI_DOUBLE, INFO, rank, MPI_COMM_WORLD);
+                printf("rank: %d sent result\n", rank);
                 free(intervals);
             }else if (rank == INFO)
             {
@@ -132,13 +122,23 @@ int main(int argc, char **argv) {
                 double res = DBL_MAX;
                 int source;//procesador origen
                 int tag;//tag para tarea a enviar
-                //MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                for(int i = 0; i < n_proc; i++){
-                    source = proc[i];
-                    tag = proc[i];
-                    MPI_Recv(&res, 1, MPI_DOUBLE, source, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    if(res < resultado_final)
-                        resultado_final = res;
+                //--------------------------------------------------------------
+                //recibir parte de trabajo
+                int *buf_len = (int*)calloc(sizeof(int), 1);
+                double *vec1 = (double*)malloc(sizeof(double));
+                receive_array(MASTER, 111, &buf_len, &vec1);
+                printf("recibido array");
+                resultado_final = seqCheck(vec1, *buf_len);
+                printf("%d -> %f", rank, resultado_final);
+                //--------------------------------------------------------------
+                for(int i = 0; i < world_size; i++){
+                    if(i != INFO){
+                        source = i;
+                        tag = i;
+                        MPI_Recv(&res, 1, MPI_DOUBLE, source, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                        if(res < resultado_final)
+                            resultado_final = res;
+                    }
                 }
                 printf("\n--------------------------------------\n");
                 printf("resultado paralelo: %f\n", resultado_final);
@@ -147,13 +147,14 @@ int main(int argc, char **argv) {
                 free(vec);
             }else{
                 int from = MASTER;
-                int tag = rank;
+                int rcv_tag = 111;
                 int *buf_len = (int*)calloc(sizeof(int), 1);
                 double *vec = (double*)malloc(sizeof(double));
-                receive_array(from, tag, &buf_len, &vec);
-                printf("RECV->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, rank, tag, *buf_len);
+                receive_array(from, rcv_tag, &buf_len, &vec);
+                printf("RECV->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, rank, rcv_tag, *buf_len);
                 double res = seqCheck(vec, *buf_len);
-                MPI_Send(&res, 1, MPI_DOUBLE, INFO, tag, MPI_COMM_WORLD);
+                int send_tag = rank;
+                MPI_Send(&res, 1, MPI_DOUBLE, INFO, send_tag, MPI_COMM_WORLD);
                 free(buf_len);
                 free(vec);
             }
