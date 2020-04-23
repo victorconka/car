@@ -149,8 +149,7 @@ int main(int argc, char *argv[])
         if(sizeM >= world_size && sizeN >= world_size){
             printf("Mi rank: %d\n", rank);
             if(rank==MASTER){
-                int n_proc = world_size - 1;
-                int *intervals = calculate_intervals(sizeM*sizeN, n_proc);
+                int *intervals = calculate_intervals(sizeM*sizeN, world_size);
                 double *matriz = crearMatriz(sizeM, sizeN);
 
                 int length;//longitud de subarray a enviar
@@ -158,17 +157,16 @@ int main(int argc, char *argv[])
                 int dest;//procesador destino
                 int tag;//tag para tarea a enviar
                 //send tasks to processors
-                for(int i = 0; i < n_proc; i++){
+                for(int i = 1; i < world_size; i++){
                     ini = intervals[i*2];
                     length = intervals[(i*2)+1] - ini;
-                    dest = i+1;
-                    tag = i+1;
+                    dest = i;
+                    tag = i;
                     MPI_Send(&(matriz[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
 
-
                 //receive tasks from processor
-                double resultado_final = 0.0;
+                double resultado_final = seqCheck(matriz, intervals[1]);
                 double res = 0.0;
                 int source;//procesador origen
                 for(int i = 1; i < world_size; i++){
