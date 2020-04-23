@@ -51,10 +51,7 @@ int main(int argc, char **argv) {
             for(int i = 0; i < length; i++){
                 dest = SLAVE;
                 tag = i;
-                //printf("SEND->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, dest, tag, longitud);
                 MPI_Send(&(vec[i]), 1, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
-                //printf("SEND->%d: %.2f\n", i, vec[i]);
-
             }
             MPI_Recv(vec, length, MPI_DOUBLE, SLAVE, SLAVE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             
@@ -70,8 +67,6 @@ int main(int argc, char **argv) {
             double *vec = (double*)malloc(sizeof(double)*10);
             for(int i = 0; i < length; i++){
                 MPI_Recv(&vec[i], 1, MPI_DOUBLE, MASTER, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                //printf("RECV->%d: %.2f\n", i, vec[i]);
-                //calcular cuadrado
                 vec[i] *= vec[i];
             }
             MPI_Send(vec, length, MPI_DOUBLE, MASTER, SLAVE, MPI_COMM_WORLD);
