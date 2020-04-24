@@ -102,8 +102,7 @@ int main(int argc, char **argv) {
             printf("Llamada: mpirun -n n prog m\nDonde n>=2, m > n\n");
         }else{
             if (rank == MASTER) {
-                int n_proc = world_size - 1;
-                int *intervals = calculate_intervals(longitud, n_proc);
+                int *intervals = calculate_intervals(longitud, world_size);
                 double *ingresos = crearVectorAleatorio(longitud);
                 double *gastos = crearVectorAleatorio(longitud);
             
@@ -111,8 +110,9 @@ int main(int argc, char **argv) {
                 int ini;//posicion inicial del subarray en el array original
                 int dest;//procesador destino
                 int tag;//tag para tarea a enviar
+
                 //send tasks to processors
-                for(int i = 0; i < world_size; i++){
+                for(int i = 1; i < world_size; i++){
                     ini = intervals[i*2];
                     length = intervals[(i*2)+1] - ini;
                     dest = i;
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
                 }
 
                 //receive tasks from processor
-                double resultado_final = seqCheck(ingresos, gastos, intervals[1]-intervals[0]);//procesador 0 calcula su parte
+                double resultado_final = seqCheck(ingresos, gastos, (intervals[1]-intervals[0]) );//procesador 0 calcula su parte
                 double res = 0.0;
                 int source;//procesador origen
                 //MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -148,7 +148,6 @@ int main(int argc, char **argv) {
                 double *gastos = (double*)malloc(sizeof(double));
                 receive_array(from, tag, &buf_len, &ingresos);
                 receive_array(from, tag, &buf_len, &gastos);
-                printf("RECV->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, rank, tag, *buf_len);
                 double res = seqCheck(ingresos, gastos, *buf_len);
                 MPI_Send(&res, 1, MPI_DOUBLE, MASTER, tag, MPI_COMM_WORLD);
                 free(buf_len);

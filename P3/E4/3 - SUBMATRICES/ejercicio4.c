@@ -190,7 +190,6 @@ int main(int argc, char *argv[])
 
         if (sizeM >= world_size && sizeN >= world_size)
         {
-            printf("Mi rank: %d\n", rank);
             if (rank == MASTER)
             {
                 double *matriz = crearMatriz(sizeM, sizeN); //matriz aleatoria no es mas que un vector
@@ -243,14 +242,12 @@ int main(int argc, char *argv[])
                                 subMatHeader[1] = finN - iniN;    //numero de columnas de la submatriz
                                 subMatHeader[2] = countSubMatrix; //contador de submatriz
                                 //matriz creada
-                                //------------------------------------------------------
-                                
-                                
+                                //------------------------------------------------------                               
                                 if (dest == MASTER)
                                 {
                                     //procesador 0 hace calculos tambien. lo ideal sería almacenar resultado en una pila, y que 
                                     //procesador 0 envie señal de comienzo de procesamiento. A partir de entonces todos empiecen
-                                    // a calcular el resultado
+                                    //a calcular el resultado
                                     globalResult += (seqCheck(subMatrix, subMatHeader[1]*subMatHeader[0]));
                                 }
                                 else

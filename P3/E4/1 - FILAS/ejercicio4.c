@@ -147,7 +147,6 @@ int main(int argc, char *argv[])
         int longitud = sizeM*sizeN;
 
         if(sizeM >= world_size && sizeN >= world_size){
-            printf("Mi rank: %d\n", rank);
             if(rank==MASTER){
                 int *intervals = calculate_intervals(sizeM*sizeN, world_size);
                 double *matriz = crearMatriz(sizeM, sizeN);
@@ -189,7 +188,6 @@ int main(int argc, char *argv[])
                 int *buf_len = (int*)calloc(sizeof(int), 1);
                 double *buf = (double*)malloc(sizeof(double));
                 receive_array(from, tag, &buf, &buf_len);
-                printf("RECV->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, rank, tag, *buf_len);
                 double res = seqCheck(buf, *buf_len);
                 MPI_Send(&res, 1, MPI_DOUBLE, MASTER, tag, MPI_COMM_WORLD);
                 free(buf_len);

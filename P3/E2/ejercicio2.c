@@ -110,10 +110,8 @@ int main(int argc, char **argv) {
                     tag = 111;
                     MPI_Send(&(vec[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
-                printf("rank: %d finished\n", rank);
                 double res = seqCheck(vec, intervals[1]-intervals[0]);
                 MPI_Send(&res, 1, MPI_DOUBLE, INFO, rank, MPI_COMM_WORLD);
-                printf("rank: %d sent result\n", rank);
                 free(intervals);
             }else if (rank == INFO)
             {
@@ -127,9 +125,7 @@ int main(int argc, char **argv) {
                 int *buf_len = (int*)calloc(sizeof(int), 1);
                 double *vec1 = (double*)malloc(sizeof(double));
                 receive_array(MASTER, 111, &buf_len, &vec1);
-                printf("recibido array");
                 resultado_final = seqCheck(vec1, *buf_len);
-                printf("%d -> %f", rank, resultado_final);
                 //--------------------------------------------------------------
                 for(int i = 0; i < world_size; i++){
                     if(i != INFO){
@@ -151,7 +147,6 @@ int main(int argc, char **argv) {
                 int *buf_len = (int*)calloc(sizeof(int), 1);
                 double *vec = (double*)malloc(sizeof(double));
                 receive_array(from, rcv_tag, &buf_len, &vec);
-                printf("RECV->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, rank, rcv_tag, *buf_len);
                 double res = seqCheck(vec, *buf_len);
                 int send_tag = rank;
                 MPI_Send(&res, 1, MPI_DOUBLE, INFO, send_tag, MPI_COMM_WORLD);

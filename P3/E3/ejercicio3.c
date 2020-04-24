@@ -93,8 +93,7 @@ int main(int argc, char **argv) {
             printf("Llamada: mpirun -n n prog m\nDonde n>=2, m > n\n");
         }else{
             if (rank == MASTER) {
-                int n_proc = world_size - 1;
-                int *intervals = calculate_intervals(longitud, n_proc);
+                int *intervals = calculate_intervals(longitud, world_size);
                 double *vec1 = crearVectorAleatorio(longitud);
                 double *vec2 = crearVectorAleatorio(longitud);
             
@@ -103,18 +102,18 @@ int main(int argc, char **argv) {
                 int dest;//procesador destino
                 int tag;//tag para tarea a enviar
                 //send tasks to processors
-                for(int i = 0; i < n_proc; i++){
+                for(int i = 1; i < world_size; i++){
                     ini = intervals[i*2];
                     length = intervals[(i*2)+1] - ini;
-                    dest = i+1;
-                    tag = i+1;
+                    dest = i;
+                    tag = i;
                     //printf("SEND->FROM: %d, TO: %d, TAG: %d, SIZE: %d\n", MASTER, dest, tag, longitud);
                     MPI_Send(&(vec1[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                     MPI_Send(&(vec2[ini]), length, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);
                 }
 
                 //receive tasks from processor
-                double resultado_final = 0.0;
+                double resultado_final = seqCheck(vec1, vec2, intervals[1]-intervals[0]);
                 double res = 0.0;
                 int source;//procesador origen
                 //MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
